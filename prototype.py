@@ -1,10 +1,14 @@
 from google.cloud.dialogflowcx_v3 import SessionsClient, AgentsClient
 from google.cloud.dialogflowcx_v3.types import session
+from dotenv import load_dotenv
+import os
 
-from setup import PROJECT_ID, LOCATION, AGENT_DISPLAY_NAME, LANGUAGE
+load_dotenv()
+
+from setup import PROJECT_ID, LOCATION, LANGUAGE
 # Defined when creating a new agent.
-# Do not confuse with display name that is admin-generated.
-AGENT_NAME = "<insert agent name here>" # This is auto-generated during the setup phase.
+# Do not confuse with display name that is given by you.
+AGENT_NAME = os.getenv('DIALOGFLOW_AGENT_NAME') # This is auto-generated during the setup phase.
 
 def compose_agent(project_id: str, location_id: str, agent_id: str):
     agent = f"projects/{project_id}/locations/{location_id}/agents/{agent_id}"

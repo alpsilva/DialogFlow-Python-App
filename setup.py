@@ -1,6 +1,10 @@
 import agent_operations
+from dotenv import load_dotenv
+import os
 
-PROJECT_ID = '<Project ID here>'
+load_dotenv()
+
+PROJECT_ID = os.getenv('GOOGLE_PROJECT_ID')
 LOCATION = "global"
 AGENT_DISPLAY_NAME = "DialogFlowPythonAppPrototype"
 LANGUAGE = "pt-br"

@@ -18,12 +18,24 @@ gcloud auth application-default login
 pip install -r requirements.txt
 ```
 
+# Setting up environment variables
+1. Create .env file in the root of the project.
+2. Insert the following variables with the correct information:
+
+| Variable          | Value                     |
+|-------------------|---------------------------|
+| GOOGLE_PROJECT_ID | Your google project ID.   |
+
 # Creating DialogFlow project into GCP
 Simply run setup.py after altering the necessary parameters inside the code.
 ```sh
 python3 setup.py
 ```
-Note the auto-generated DialogFlow Agent Name. It must be inserted in the prototype file next.
+Note the auto-generated DialogFlow Agent Name. It must be inserted in the .env with the variable:
+
+| Variable              | Value                      |
+|-----------------------|----------------------------|
+| DIALOGFLOW_AGENT_NAME | Auto-generated Agent Name. |
 
 # Running prototype
 1. Change the AGENT_NAME variable to the auto-generated DialogFlow Agent Name in the last step.
@@ -34,6 +46,6 @@ python3 prototype.py
 
 # Roadmap
 - [x] Infra as code
-- [] Creation of more intents as code
-- [] Improve confiability
-- [] Integrate with chatbot
+- [ ] Creation of more intents as code
+- [ ] Improve confiability
+- [ ] Integrate with chatbot
