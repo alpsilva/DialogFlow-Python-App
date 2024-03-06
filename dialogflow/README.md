@@ -19,7 +19,7 @@ pip install -r requirements.txt
 ```
 
 # Setting up environment variables
-1. Create .env file in the root of the project.
+1. Create .env file in the dialogflow folder.
 2. Insert the following variables with the correct information:
 
 | Variable          | Value                     |
