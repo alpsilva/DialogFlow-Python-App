@@ -1,0 +1,93 @@
+{
+    "intents": [
+          {
+                "intent": "Greeting",
+                "text": [
+                      "Olá",
+                      "Opa",
+                      "Bom dia",
+                      "Boa tarde",
+                      "Boa noite",
+                      "Olá, está aí?",
+                      "Oi",
+                      "Tudo bem?",
+                      "dale"
+                ],
+                "responses": [
+                      "Olá! Como posso te ajudar?"
+                ],
+                "extension":  {
+                      "function": "",
+                      "entities": false,
+                      "responses": []
+                },
+                "context":  {
+                      "in": "",
+                      "out": "",
+                      "clear": false
+                },
+                "entityType": "NA",
+                "entities": []
+          },
+          {
+                "intent": "Thanks",
+                "text": [
+                      "OK",
+                      "Obrigado",
+                      "Valeu",
+                      "Muito obrigado",
+                      "vlw",
+                      "Agradecido",
+                      "Agradecida",
+                      "Obrigada",
+                      "Muito Obrigada",
+                      "Grato",
+                      "Grata"
+                ],
+                "responses": [
+                      "Sem problemas!"
+                ],
+                "extension":  {
+                      "function": "",
+                      "entities": false,
+                      "responses": []
+                },
+                "context":  {
+                      "in": "",
+                      "out": "",
+                      "clear": false
+                },
+                "entityType": "NA",
+                "entities": []
+          },
+          {
+            "intent": "Cancel",
+            "text": [
+                  "Cancelar",
+                  "Deixa",
+                  "Deixa para lá",
+                  "Cancela",
+                  "Encerrar",
+                  "Terminar",
+                  "Encerra",
+                  "Termina",
+                  "Esquece"
+            ],
+            "responses": [
+                  "Tudo bem, até a próxima."
+            ],
+            "extension":  {
+                  "function": "",
+                  "entities": false,
+                  "responses": []
+            },
+            "context":  {
+                  "in": "",
+                  "out": "",
+                  "clear": false
+            },
+            "entityType": "NA",
+            "entities": []
+      }
+    ]
+}
