@@ -14,7 +14,7 @@ def compose_agent(project_id: str, location_id: str, agent_id: str):
     agent = f"projects/{project_id}/locations/{location_id}/agents/{agent_id}"
     return agent
 
-def detect_intent_texts(agent, session_id, text, language_code):
+def detect_intent_text(agent, session_id, text, language_code):
     """Returns the result of detect intent with text as inputs.
 
     Using the same `session_id` between requests allows continuation
