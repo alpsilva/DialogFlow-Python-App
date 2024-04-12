@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
+from datetime import datetime
 from pprint import pprint
 from time import sleep
 import boto3
+import json
 import os
 
 load_dotenv()
@@ -90,10 +92,144 @@ def create_bot(bot_name: str, bot_alias: str, bot_locale: str, iam_role_arn: str
 
     return new_bot_id, new_bot_alias_id
 
-def load_intents():
-    # This may be useful:
-    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lexv2-models/client/create_intent.html
-    pass
+def upload_intents(bot_id, bot_alias_id, bot_alias_name, bot_locale):
+    """ Uploads the intents in the dict to the Amazon Lex bot identified by the bot id and alias id. """
+
+
+    def load_intents():
+        """ Consumes intents.json and returns intents as a dict. """
+        file_path = "./intents/sample.json"
+        intents = {}
+
+        with open(file_path, 'r') as json_file:
+            intents = json.load(json_file)
+
+        return intents
+
+    intents = load_intents()
+    now = str(datetime.now())
+    bot_version = "DRAFT"
+    
+    # Create new bot version
+    response = lex_client.create_bot_version(
+        botId=bot_id,
+        botVersionLocaleSpecification={
+            bot_locale: {
+                'sourceBotVersion': bot_version
+            }
+        },
+        description=f"Version with intents uploaded on {now}"
+    )
+
+    new_version_id = response['botVersion']
+
+    # Sleeps for 5 seconds in order for the new version to finish processing in the cloud.
+    sleep(5)
+
+    # Update alias to point to new version  
+    response = lex_client.update_bot_alias(
+        botId=bot_id,
+        botAliasId=bot_alias_id,
+        botAliasName=bot_alias_name,
+        # botVersion=bot_version,
+        botVersion=new_version_id,
+        botAliasLocaleSettings={
+            bot_locale: {
+                'enabled': True,
+            }
+        },
+    )
+
+    for intent_name, intent_data in intents.items():
+        utterance_data = [
+            {'utterance': utterance}
+            for utterance
+            in intent_data['sampleUtterances']
+        ]
+
+        try:
+            intent_response = lex_client.create_intent(
+                botId=bot_id,
+                botVersion=bot_version,
+                localeId=locale,
+                intentName=intent_name,
+                description=intent_data['description'],
+                sampleUtterances=utterance_data,
+            )
+        except Exception as e:
+            print(f"Error while creating intent {intent_name}:")
+            print(e)
+            print("Skipping...")
+            pass
+
+        intent_id = intent_response['intentId']
+
+        print(f"Intent {intent_name} created with ID {intent_id}.")
+
+        slots = intent_data['slots']
+        slots_priorites = []
+
+        for index, slot_data in enumerate(slots):
+            slot_name = slot_data['name']
+            slot_type = slot_data['slotType']
+            slot_description = slot_data['description']
+            value_elicitation_setting = slot_data['valueElicitationSetting']
+
+            try:
+                slot_response = lex_client.create_slot(
+                    botId=bot_id,
+                    botVersion=bot_version,
+                    localeId=locale,
+                    intentId=intent_id,
+                    slotName=slot_name,
+                    slotTypeId=slot_type,
+                    description=slot_description,
+                    valueElicitationSetting=value_elicitation_setting
+                )
+
+                slot_id = slot_response['slotId']
+                print(f"Slot {slot_name} created with ID {slot_id} for Intent {intent_name}.")
+
+                slots_priorites.append({
+                    'priority': index,
+                    'slotId': slot_id
+                })
+
+            except Exception as e:
+                print(f"Error while creating slot {slot_name}:")
+                print(e)
+                print("Skipping...")
+                pass
+        
+        print(f"Updating slot priorities for intent {intent_name}...")
+        try:
+            update_response = lex_client.update_intent(
+                botId=bot_id,
+                botVersion=bot_version,
+                localeId=locale,
+                intentId=intent_id,
+                intentName=intent_name,
+                description=intent_data['description'],
+                sampleUtterances=utterance_data,
+                slotPriorities=slots_priorites
+            )
+        except Exception as e:
+            print(f"Error while updating intent {intent_name}:")
+            print(e)
+            print("Skipping...")
+            pass
+        
+
+
+    print(f"Intents uploaded to bot {bot_id} alias {bot_alias_id}. Proceeding to build alias...")
+
+    build_response = lex_client.build_bot_locale(
+        botId=bot_id,
+        botVersion=bot_version,
+        localeId=locale
+    )
+
+    sleep(5)
 
 def update_bot():
     pass
@@ -124,17 +260,30 @@ def list_bot_aliases(bot_id: str):
         print()
     print("=" * 20)
 
+def list_bot_versions(bot_id: str):
+    """ List all Amazon Lex bot versions associated with the bot Id. """
+    print(f"List of Lex bots versions for the bot ID {bot_id}:")
+    versions = lex_client.list_bot_versions(botId=bot_id)['botVersionSummaries']
+    for version in versions:
+        pprint(version)
+        print()
+    print("=" * 20)
+
 name = "TestBotPrototype"
 alias_name = "TestBotPrototypeAlias"
 locale = "pt_BR"
 
 iam_arn = os.getenv("LEX_BOTS_IAM_ROLE_ARN")
 
-# list_bots()
-
 # id, alias_id = create_bot(name, alias_name, locale, iam_arn)
 # delete_res = delete_bot("86HPBIGNRJ")
 # sleep(5)
 
-list_bots()
-list_bot_aliases("X1VYHNVBJV")
+bot_id = "X1VYHNVBJV"
+bot_alias_id = "C7PGMSD1KT"
+
+# list_bots()
+# list_bot_aliases(bot_id)
+# list_bot_versions(bot_id)
+
+upload_intents(bot_id, bot_alias_id, alias_name, locale)

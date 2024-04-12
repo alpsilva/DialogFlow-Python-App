@@ -25,6 +25,8 @@ def detect_intent_text(bot_id, bot_alias, locale_id, session_id, text):
         sessionId=session_id,
         text=text
     )
+
+    pprint(response)
     
     intent, confidence, bot_response = None, -1, None
     
@@ -50,15 +52,24 @@ locale_id = os.getenv('BOT_LOCALE_ID')
 session_id = str(uuid4())
 
 texts = [
-    "Gostaria de pedir umas flores",
-    "Margaridas.",
-    "Este sábado.",
-    "15 horas.",
+    "Quero me registrar",
+    "André Luiz",
+    "alpsilva.dev@gmail.com",
+    "masculino",
+    "16/07/1998",
+    # "sim",
+    "Quero realizar um registro de relato",
+    "12/04/2024",
+    "15:00",
+    "ônibus",
+    "Flashing",
+    # "sim"
 ]
 
 for i, text in enumerate(texts):
     print(f"Turn {i + 1}:")
-    
+    print(f"User message: {text}")
+
     intent, state, confidence, bot_response = detect_intent_text(bot_id, bot_alias, locale_id, session_id, text)
     
     print(f"User message: {text}")
