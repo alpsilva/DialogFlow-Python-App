@@ -282,8 +282,8 @@ iam_arn = os.getenv("LEX_BOTS_IAM_ROLE_ARN")
 bot_id = "X1VYHNVBJV"
 bot_alias_id = "C7PGMSD1KT"
 
-# list_bots()
-# list_bot_aliases(bot_id)
+list_bots()
+list_bot_aliases(bot_id)
 # list_bot_versions(bot_id)
 
-upload_intents(bot_id, bot_alias_id, alias_name, locale)
+# upload_intents(bot_id, bot_alias_id, alias_name, locale)

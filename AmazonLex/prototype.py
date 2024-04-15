@@ -45,7 +45,7 @@ def detect_intent_text(bot_id, bot_alias, locale_id, session_id, text):
     return intent, session_state, confidence, bot_response
 
 bot_id = os.getenv('BOT_ID')
-bot_alias = os.getenv('BOT_ALIAS')
+bot_alias = os.getenv('BOT_ALIAS_ID')
 locale_id = os.getenv('BOT_LOCALE_ID')
 
 # This controls if the messages belong to the same thread, to help with context.
