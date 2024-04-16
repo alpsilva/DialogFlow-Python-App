@@ -5,13 +5,14 @@ import boto3
 import json
 
 class LexBot:
-    def __init__(self, bot_id, bot_alias_id, bot_alias_name, bot_name, bot_locale) -> None:
+    def __init__(self, bot_id, bot_name, bot_alias_id, bot_alias_name, bot_locale) -> None:
         self.client = boto3.client('lexv2-models')
-        self.bot_id = bot_id
-        self.bot_name = bot_name
-        self.bot_alias_id = bot_alias_id
-        self.bot_alias_name = bot_alias_name
-        self.bot_locale = bot_locale
+        self.id = bot_id
+        self.name = bot_name
+        self.alias_id = bot_alias_id
+        self.alias_name = bot_alias_name
+        self.locale = bot_locale
+        self.version = "DRAFT" # Study how to best represent a bot version here.
 
     def get_status(self):
         """
@@ -19,7 +20,7 @@ class LexBot:
         status can be on of:
         'Creating'|'Available'|'Inactive'|'Deleting'|'Failed'|'Versioning'|'Importing'|'Updating'
         """
-        bot_info = self.client.describe_bot(botId=self.bot_id)
+        bot_info = self.client.describe_bot(botId=self.id)
         return bot_info['botStatus']
 
     def detect_intent_text(self, session_id, text):
@@ -31,9 +32,9 @@ class LexBot:
         """
         # Submit the text 'I would like to see a dentist'
         response = self.client.recognize_text(
-            botId=self.bot_id,
-            botAliasId=self.bot_alias_name,
-            localeId=self.bot_locale,
+            botId=self.id,
+            botAliasId=self.alias_name,
+            localeId=self.locale,
             sessionId=session_id,
             text=text
         )
@@ -59,14 +60,13 @@ class LexBot:
     def _upload_intents(self, intents: dict):
         """ Uploads the intents in the dict to the Amazon Lex bot identified by the bot id and alias id. """
         now = str(datetime.now())
-        bot_version = "DRAFT"
-        
+
         # Create new bot version
         response = self.client.create_bot_version(
-            botId=self.bot_id,
+            botId=self.id,
             botVersionLocaleSpecification={
-                self.bot_locale: {
-                    'sourceBotVersion': bot_version
+                self.locale: {
+                    'sourceBotVersion': self.version
                 }
             },
             description=f"Version with intents uploaded on {now}"
@@ -79,12 +79,12 @@ class LexBot:
 
         # Update alias to point to new version  
         response = self.client.update_bot_alias(
-            botId=self.bot_id,
-            botAliasId=self.bot_alias_id,
-            botAliasName=self.bot_alias_name,
+            botId=self.id,
+            botAliasId=self.alias_id,
+            botAliasName=self.alias_name,
             botVersion=new_version_id,
             botAliasLocaleSettings={
-                self.bot_locale: {
+                self.locale: {
                     'enabled': True,
                 }
             },
@@ -99,9 +99,9 @@ class LexBot:
 
             try:
                 intent_response = self.client.create_intent(
-                    botId=self.bot_id,
-                    botVersion=bot_version,
-                    localeId=self.bot_locale,
+                    botId=self.id,
+                    botVersion=self.version,
+                    localeId=self.locale,
                     intentName=intent_name,
                     description=intent_data['description'],
                     sampleUtterances=utterance_data,
@@ -127,9 +127,9 @@ class LexBot:
 
                 try:
                     slot_response = self.client.create_slot(
-                        botId=self.bot_id,
-                        botVersion=bot_version,
-                        localeId=self.bot_locale,
+                        botId=self.id,
+                        botVersion=self.version,
+                        localeId=self.locale,
                         intentId=intent_id,
                         slotName=slot_name,
                         slotTypeId=slot_type,
@@ -154,9 +154,9 @@ class LexBot:
             print(f"Updating slot priorities for intent {intent_name}...")
             try:
                 update_response = self.client.update_intent(
-                    botId=self.bot_id,
-                    botVersion=bot_version,
-                    localeId=self.bot_locale,
+                    botId=self.id,
+                    botVersion=self.version,
+                    localeId=self.locale,
                     intentId=intent_id,
                     intentName=intent_name,
                     description=intent_data['description'],
@@ -174,12 +174,19 @@ class LexBot:
         print(f"Intents uploaded to bot {self.bot_id} alias {self.bot_alias_id}. Proceeding to build alias...")
 
         build_response = self.client.build_bot_locale(
-            botId=self.bot_id,
-            botVersion=bot_version,
-            localeId=self.bot_locale
+            botId=self.id,
+            botVersion=self.version,
+            localeId=self.locale
         )
 
-        sleep(5)
+        wait_time = 5
+        print("Build requested. Checking status...")
+        status = "Updating"
+        while status == "Updating":
+            status = self.get_status()
+            print(f"Current status: {status}. Checking again in {wait_time} seconds...")
+        
+        print(f"Build finished with status: {status}")
 
     def upload_intents_from_file(self, file_path: str):
         """ Consumes the json file and returns intents as a dict. """
@@ -190,9 +197,19 @@ class LexBot:
 
         self._upload_intents(intents)
 
+    def list_intents(self):
+        """ List all Amazon Lex intents associated with this bot. """
+        intents = self.client.list_intents(
+            botId=self.id,
+            botVersion = self.version,
+            localeId=self.locale
+        )['intentSummaries']
+        output = [ dict(version) for version in intents ]
+        return output
+
     def list_aliases(self):
         """ List all Amazon Lex bots aliases associated with this bot ID. """
-        aliases = self.client.list_bot_aliases(botId=self.bot_id)['botAliasSummaries']
+        aliases = self.client.list_bot_aliases(botId=self.id)['botAliasSummaries']
         output = [ dict(alias) for alias in aliases ]
         return output
     
@@ -204,7 +221,7 @@ class LexBot:
 
     def list_versions(self):
         """ List all Amazon Lex bot versions associated with this bot ID. """
-        versions = self.client.list_bot_versions(botId=self.bot_id)['botVersionSummaries']
+        versions = self.client.list_bot_versions(botId=self.id)['botVersionSummaries']
         output = [ dict(version) for version in versions ]
         return output
     
