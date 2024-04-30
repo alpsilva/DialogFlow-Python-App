@@ -107,26 +107,57 @@ class LexBotController:
         output = [ dict(alias) for alias in aliases ]
         return output
     
-    def create_intent(self, intent_name: str, description: dict, sample_utterances: list):
-        """ creates a new intent in the bot and returns the intent id. """
+    def list_intents(self):
+        """ List all Amazon Lex intents associated with this bot, in this intent. """
+        intents = self.client.list_intents(
+            botId=self.id,
+            botVersion = self.version,
+            localeId=self.locale
+        )['intentSummaries']
+        output = [ dict(intent) for intent in intents ]
+        return output
+
+    def intent_exists(self, name: str):
+        """ Checks if the intent exists in the bot. Returns id if True, None if False """
+        intents = self.list_intents()
+        output = None
+        for intent in intents:
+            if intent['intentName'] == name:
+                output = intent['intentId']
+
+        return output
+
+    def upsert_intent(self, name: str, description: dict, sample_utterances: list):
+        """ Inserts (or updates if already exists) intent in the bot and returns the intent id. """
+        intent_id = self.intent_exists(name)
+
+        if intent_id:
+            self.update_intent(name, description, sample_utterances)
+        else:
+            intent_id = self.insert_intent(name, description, sample_utterances)
+
+        return intent_id
+        
+    def insert_intent(self, name: str, description: dict, sample_utterances: list):
+        """ inserts a new intent in the bot and returns the intent id. """
         response = self.client.create_intent(
             botId=self.id,
             botVersion=self.version,
             localeId=self.locale,
-            intentName=intent_name,
+            intentName=name,
             description=description,
             sampleUtterances=sample_utterances,
         )
 
         return response['intentId']
     
-    def update_intent(self, intent_name: str, description: dict, sample_utterances: list, slot_priorities: list = None):
+    def update_intent(self, name: str, description: dict, sample_utterances: list, slot_priorities: list = None):
         """ Updates an intent in the bot. """
         update_dict = {
             'botId': self.id,
             'botVersion': self.version,
             'localeId': self.locale,
-            'intentName': intent_name,
+            'intentName': name,
             'description': description,
             'sampleUtterances': sample_utterances,
         }
@@ -136,19 +167,40 @@ class LexBotController:
         
         self.client.update_intent(**update_dict)
 
-    def list_intents(self):
-        """ List all Amazon Lex intents associated with this bot. """
-        intents = self.client.list_intents(
+    def list_slots(self, intent_id):
+        """ List all Amazon Lex slots associated with this bot, in this intent. """
+        slots = self.client.list_slots(
             botId=self.id,
             botVersion = self.version,
-            localeId=self.locale
-        )['intentSummaries']
-        output = [ dict(version) for version in intents ]
+            localeId=self.locale,
+            intentId=intent_id
+        )['slotSummaries']
+        output = [ dict(slot) for slot in slots ]
         return output
 
+    def slot_exists(self, name: str):
+        """ Checks if the slot exists in the bot. Returns id if True, None if False """
+        slots = self.list_slots()
+        output = None
+        for slot in slots:
+            if slot['slotName'] == name:
+                output = slot['slotId']
 
-    def create_slot(self, intent_id: str, name: str, type_id: str, description: str, value_elicitation_setting: dict):
-        """ creates a new slot in the bot, for the given intent, and returns the slot id. """
+        return output
+
+    def upsert_slot(self, intent_id: str, name: str, type_id: str, description: str, value_elicitation_setting: dict):
+        """ Inserts (or updates if already exists) slot in the bot, for the given intent, and returns the slot id. """
+        slot_id = self.slot_exists(name)
+
+        if slot_id:
+            self.update_slot(intent_id, name, type_id, description, value_elicitation_setting)
+        else:
+            slot_id = self.insert_slot(intent_id, name, type_id, description, value_elicitation_setting)
+
+        return slot_id
+
+    def insert_slot(self, intent_id: str, name: str, type_id: str, description: str, value_elicitation_setting: dict):
+        """ inserts a new slot in the bot, for the given intent, and returns the slot id. """
         response = self.client.create_slot(
             botId=self.id,
             botVersion=self.version,

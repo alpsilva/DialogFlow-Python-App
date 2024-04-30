@@ -44,8 +44,7 @@ class LexBot:
 
             description = intent_data['description']
             
-            # TODO: will throw an error if the intent already exists. In that case, should update instead.
-            intent_id = self.controller.create_intent(intent_name, description, sample_utterances)
+            intent_id = self.controller.upsert_intent(intent_name, description, sample_utterances)
             print(f"Intent {intent_name} created with ID {intent_id}.")
 
             slots = intent_data['slots']
@@ -57,8 +56,7 @@ class LexBot:
                 slot_description = slot_data['description']
                 value_elicitation_setting = slot_data['valueElicitationSetting']
 
-                # TODO: will throw an error if the intent already exists. In that case, should update instead.
-                slot_id = self.controller.create_slot(
+                slot_id = self.controller.upsert_slot(
                     intent_id, slot_name, slot_type, slot_description, value_elicitation_setting
                 )
                 print(f"Slot {slot_name} created with ID {slot_id} for Intent {intent_name}.")
