@@ -1,9 +1,8 @@
+from lex_bot_controller import LexBotController
 from datetime import datetime
 from pprint import pprint
 from time import sleep
-import boto3
 import json
-from lex_bot_controller import LexBotController
 
 class LexBot:
     def __init__(self, bot_id, bot_name, bot_alias_id, bot_alias_name, bot_locale) -> None:
@@ -21,31 +20,7 @@ class LexBot:
         Using the same `session_id` between requests allows keeping context of the conversations.
         Each user should have it's own session id.
         """
-        # Submit the text 'I would like to see a dentist'
-        response = self.client.recognize_text(
-            botId=self.id,
-            botAliasId=self.alias_name,
-            localeId=self.locale,
-            sessionId=session_id,
-            text=text
-        )
-
-        pprint(response)
-        
-        intent, confidence, bot_response = None, -1, None
-        
-        bot_response = response['messages'][0]['content']
-
-        interpretations = response['interpretations']
-        session_state = response['sessionState']['dialogAction']['type']
-
-        if len(interpretations) > 0:
-            most_confident = interpretations[0]
-            intent = most_confident['intent']['name']
-            
-            if session_state != "ConfirmIntent":
-                confidence = most_confident['nluConfidence']['score']
-
+        intent, session_state, confidence, bot_response = self.controller.detect_intent(session_id, text)
         return intent, session_state, confidence, bot_response
 
     def _upload_intents(self, intents: dict):

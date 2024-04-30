@@ -10,8 +10,36 @@ class LexBotController:
         self.version = "DRAFT" # Study how to best represent a bot version here.
         self.validator
 
-    def get_client(self):
-        return self.client
+    def detect_intent(self, session_id, text):
+        """
+        Returns the result of detect intent with text as input.
+
+        Using the same `session_id` between requests allows keeping context of the conversations.
+        Each user should have it's own session id.
+        """
+        response = self.client.recognize_text(
+            botId=self.id,
+            botAliasId=self.alias_name,
+            localeId=self.locale,
+            sessionId=session_id,
+            text=text
+        )
+
+        intent, confidence, bot_response = None, -1, None
+        
+        bot_response = response['messages'][0]['content']
+
+        interpretations = response['interpretations']
+        session_state = response['sessionState']['dialogAction']['type']
+
+        if len(interpretations) > 0:
+            most_confident = interpretations[0]
+            intent = most_confident['intent']['name']
+            
+            if session_state != "ConfirmIntent":
+                confidence = most_confident['nluConfidence']['score']
+
+        return intent, session_state, confidence, bot_response
     
     def get_status(self):
         """
