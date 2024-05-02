@@ -95,14 +95,14 @@ class LexManager:
         output = [ dict(bot) for bot in bots ]
         return output
 
-    def get_bot(self, bot_id, bot_alias_id, bot_locale):
+    def get_bot(self, bot_id, bot_alias_id, bot_locale) -> LexBot:
         """
         Returns LexBot class. For a bot to be specified in the cloud, it is needed:
         - botId (identifier of the bot).
         - botAliasId (identifier of specific bot alias. Aliases point to specific versions to ease integration).
         - localeId (Language code, such as pt_BR, within the bot).
         """
-        bot_info = self.client.describe_bot(bot_id)
+        bot_info = self.client.describe_bot(botId=bot_id)
         bot_name = bot_info['botName']
 
         bot_alias_info = self.client.describe_bot_alias(botId=bot_id, botAliasId=bot_alias_id)

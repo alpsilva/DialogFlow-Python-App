@@ -1,42 +1,58 @@
 import boto3
+from pprint import pprint
 class LexBotController:
     def __init__(self, bot_id, bot_name, bot_alias_id, bot_alias_name, bot_locale) -> None:
         self.client = boto3.client('lexv2-models')
+        self.runtime = boto3.client('lexv2-runtime')
         self.id = bot_id
         self.name = bot_name
         self.alias_id = bot_alias_id
         self.alias_name = bot_alias_name
         self.locale = bot_locale
         self.version = "DRAFT" # Study how to best represent a bot version here.
-        self.validator
 
-    def detect_intent(self, session_id, text):
+    def detect_intent(self, session_id, text, session_state: dict = None):
         """
         Returns the result of detect intent with text as input.
 
         Using the same `session_id` between requests allows keeping context of the conversations.
         Each user should have it's own session id.
         """
-        response = self.client.recognize_text(
-            botId=self.id,
-            botAliasId=self.alias_name,
-            localeId=self.locale,
-            sessionId=session_id,
-            text=text
-        )
+        # If the session id does not exist yet, throws bad request exception.
+        
+        request_dict = {
+            'botId': self.id,
+            'botAliasId': self.alias_id,
+            'localeId': self.locale,
+            'sessionId': session_id,
+            'text': text
+        }
+        
+        if session_state:
+            # session_state = self.runtime.get_session(
+            #     botId=self.id,
+            #     botAliasId=self.alias_id,
+            #     localeId=self.locale,
+            #     sessionId=session_id
+            # )['sessionState']
+            request_dict['sessionState'] = session_state
+
+        # TODO: Study start conversation and similars
+        response = self.runtime.recognize_text(**request_dict)
 
         intent, confidence, bot_response = None, -1, None
         
         bot_response = response['messages'][0]['content']
 
         interpretations = response['interpretations']
-        session_state = response['sessionState']['dialogAction']['type']
+        session_state = response['sessionState']
+        dialog_action_type = session_state['dialogAction']['type']
 
         if len(interpretations) > 0:
             most_confident = interpretations[0]
             intent = most_confident['intent']['name']
             
-            if session_state != "ConfirmIntent":
+            if dialog_action_type != "ConfirmIntent":
                 confidence = most_confident['nluConfidence']['score']
 
         return intent, session_state, confidence, bot_response
@@ -68,7 +84,7 @@ class LexBotController:
         print(f"Build finished with status: {status}")
 
     def create_new_version(self, version_description: str):
-        """ creates a new version of the bot and return the version id. """ 
+        """ creates a new version of the bot and return the version. """ 
         response = self.client.create_bot_version(
             botId=self.id,
             botVersionLocaleSpecification={
@@ -87,13 +103,13 @@ class LexBotController:
         output = [ dict(version) for version in versions ]
         return output
 
-    def update_alias(self, version_id: str):
+    def update_alias(self):
         """ updates the alias to point to the version_id """
         self.client.update_bot_alias(
             botId=self.id,
             botAliasId=self.alias_id,
             botAliasName=self.alias_name,
-            botVersion=version_id,
+            botVersion=self.version,
             botAliasLocaleSettings={
                 self.locale: {
                     'enabled': True,
@@ -132,7 +148,7 @@ class LexBotController:
         intent_id = self.intent_exists(name)
 
         if intent_id:
-            self.update_intent(name, description, sample_utterances)
+            self.update_intent(intent_id, name, description, sample_utterances)
         else:
             intent_id = self.insert_intent(name, description, sample_utterances)
 
@@ -151,12 +167,13 @@ class LexBotController:
 
         return response['intentId']
     
-    def update_intent(self, name: str, description: dict, sample_utterances: list, slot_priorities: list = None):
+    def update_intent(self, intent_id: str, name: str, description: dict, sample_utterances: list, slot_priorities: list = None):
         """ Updates an intent in the bot. """
         update_dict = {
             'botId': self.id,
             'botVersion': self.version,
             'localeId': self.locale,
+            'intentId': intent_id,
             'intentName': name,
             'description': description,
             'sampleUtterances': sample_utterances,
@@ -178,9 +195,9 @@ class LexBotController:
         output = [ dict(slot) for slot in slots ]
         return output
 
-    def slot_exists(self, name: str):
-        """ Checks if the slot exists in the bot. Returns id if True, None if False """
-        slots = self.list_slots()
+    def slot_exists(self, intent_id: str, name: str):
+        """ Checks if the slot exists in the bot, in the given intent. Returns id if True, None if False """
+        slots = self.list_slots(intent_id)
         output = None
         for slot in slots:
             if slot['slotName'] == name:
@@ -190,10 +207,10 @@ class LexBotController:
 
     def upsert_slot(self, intent_id: str, name: str, type_id: str, description: str, value_elicitation_setting: dict):
         """ Inserts (or updates if already exists) slot in the bot, for the given intent, and returns the slot id. """
-        slot_id = self.slot_exists(name)
+        slot_id = self.slot_exists(intent_id, name)
 
         if slot_id:
-            self.update_slot(intent_id, name, type_id, description, value_elicitation_setting)
+            self.update_slot(intent_id, slot_id, name, type_id, description, value_elicitation_setting)
         else:
             slot_id = self.insert_slot(intent_id, name, type_id, description, value_elicitation_setting)
 
@@ -214,13 +231,14 @@ class LexBotController:
 
         return response['slotId']
     
-    def update_slot(self, intent_id: str, name: str, type_id: str, description: str, value_elicitation_setting: dict):
+    def update_slot(self, intent_id: str, slot_id: str, name: str, type_id: str, description: str, value_elicitation_setting: dict):
         """ Updates a slot in the bot. """
         update_dict = {
             'botId':self.id,
             'botVersion':self.version,
             'localeId':self.locale,
             'intentId':intent_id,
+            'slotId':slot_id,
             'slotName':name,
             'slotTypeId':type_id,
             'description':description,
