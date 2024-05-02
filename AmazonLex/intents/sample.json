@@ -100,82 +100,108 @@
         "quero relatar",
         "quero fazer um relato"
       ],
-    "slots": [
-        {
-            "name": "ComplaintDate",
-            "description": "A data do relato",
-            "slotType": "AMAZON.Date",
-            "valueElicitationSetting": {
-                "slotConstraint": "Required",
-                "promptSpecification": {
-                    "maxRetries": 3,
-                    "messageGroups": [
-                        {
-                            "message": {
-                                "plainTextMessage": {"value": "Que dia aconteceu? (dd/mm/aaaa)"}
+        "intentConfirmationSetting": {
+            "active": true,
+            "promptSpecification": {
+                "maxRetries": 3,
+                "messageGroups": [
+                    {
+                        "message": {
+                            "plainTextMessage": {
+                                "value": "Tenho todas as informações que preciso. Posso prosseguir com o registro desse relato?"
                             }
                         }
-                    ]
-                }
+                    }
+                ]
+            },
+            "confirmationResponse": {
+                "messageGroups": [
+                    {
+                        "message": {
+                            "plainTextMessage": {
+                                "value": "Ok, vamos registrar seu relato!"
+                            }
+                        }
+                    }
+                ]
             }
         },
-        {
-            "name": "ComplaintHour",
-            "slotConstraint": "Required",
-            "description": "A hora do relato",
-            "slotType": "AMAZON.Time",
-            "valueElicitationSetting": {
-                "slotConstraint": "Required",
-                "promptSpecification": {
-                    "maxRetries": 3,
-                    "messageGroups": [
-                        {
-                            "message": {
-                                "plainTextMessage": {"value": "Que horas aconteceu? (hh:mm)"}
+        "slots": [
+            {
+                "name": "ComplaintDate",
+                "description": "A data do relato",
+                "slotType": "AMAZON.Date",
+                "valueElicitationSetting": {
+                    "slotConstraint": "Required",
+                    "promptSpecification": {
+                        "maxRetries": 3,
+                        "messageGroups": [
+                            {
+                                "message": {
+                                    "plainTextMessage": {"value": "Que dia aconteceu? (dd/mm/aaaa)"}
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ComplaintHour",
+                "slotConstraint": "Required",
+                "description": "A hora do relato",
+                "slotType": "AMAZON.Time",
+                "valueElicitationSetting": {
+                    "slotConstraint": "Required",
+                    "promptSpecification": {
+                        "maxRetries": 3,
+                        "messageGroups": [
+                            {
+                                "message": {
+                                    "plainTextMessage": {"value": "Que horas aconteceu? (hh:mm)"}
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ComplaintPlace",
+                "description": "O local do ocorrido no relato",
+                "slotType": "AMAZON.AlphaNumeric",
+                "valueElicitationSetting": {
+                    "slotConstraint": "Required",
+                    "promptSpecification": {
+                        "maxRetries": 3,
+                        "messageGroups": [
+                            {
+                                "message": {
+                                    "plainTextMessage": {"value": "Onde aconteceu?"}
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "ComplaintType",
+                "slotConstraint": "Required",
+                "description": "O tipo do relato",
+                "slotType": "AMAZON.AlphaNumeric",
+                "valueElicitationSetting": {
+                    "slotConstraint": "Required",
+                    "promptSpecification": {
+                        "maxRetries": 3,
+                        "messageGroups": [
+                            {
+                                "message": {
+                                    "plainTextMessage": {"value": "Qual tipo de importunação você sofreu?"}
+                                }
+                            }
+                        ]
+                    }
                 }
             }
-        },
-        {
-            "name": "ComplaintPlace",
-            "description": "O local do ocorrido no relato",
-            "slotType": "AMAZON.AlphaNumeric",
-            "valueElicitationSetting": {
-                "slotConstraint": "Required",
-                "promptSpecification": {
-                    "maxRetries": 3,
-                    "messageGroups": [
-                        {
-                            "message": {
-                                "plainTextMessage": {"value": "Onde aconteceu?"}
-                            }
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "name": "ComplaintType",
-            "slotConstraint": "Required",
-            "description": "O tipo do relato",
-            "slotType": "AMAZON.AlphaNumeric",
-            "valueElicitationSetting": {
-                "slotConstraint": "Required",
-                "promptSpecification": {
-                    "maxRetries": 3,
-                    "messageGroups": [
-                        {
-                            "message": {
-                                "plainTextMessage": {"value": "Qual tipo de importunação você sofreu?"}
-                            }
-                        }
-                    ]
-                }
-            }
-        }
-    ]
+        ]
     }
   }
   
