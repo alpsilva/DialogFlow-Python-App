@@ -8,6 +8,46 @@
             "Ainda não sou registrado",
             "Registrar"
         ],
+        "intentClosingSetting": {
+            "active": false,
+            "closingResponse": {
+                "messageGroups": [
+                    {
+                        "message": {
+                            "plainTextMessage": {
+                                "value": "Obrigado por me informar."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "intentConfirmationSetting": {
+            "active": true,
+            "promptSpecification": {
+                "maxRetries": 3,
+                "messageGroups": [
+                    {
+                        "message": {
+                            "plainTextMessage": {
+                                "value": "Tenho todas as informações que preciso. Posso prosseguir com o registro seu registro?"
+                            }
+                        }
+                    }
+                ]
+            },
+            "confirmationResponse": {
+                "messageGroups": [
+                    {
+                        "message": {
+                            "plainTextMessage": {
+                                "value": "Ok, registrando!"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "slots": [
             {
                 "name": "UserName",
@@ -100,6 +140,20 @@
             "quero relatar",
             "quero fazer um relato"
         ],
+        "intentClosingSetting": {
+            "active": false,
+            "closingResponse": {
+                "messageGroups": [
+                    {
+                        "message": {
+                            "plainTextMessage": {
+                                "value": "Obrigado por me informar."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
         "intentConfirmationSetting": {
             "active": true,
             "promptSpecification": {

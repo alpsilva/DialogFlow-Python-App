@@ -24,7 +24,16 @@ class LexBot:
         Using the same `session_id` between requests allows keeping context of the conversations.
         Each user should have it's own session id.
         """
-        # TODO: Talvez evitar a lógica first_message usando a função put_session
+        if session_state:
+            slots = session_state['intent']['slots']
+            pop_list = []
+            for slot, value in slots.items():
+                if value is None:
+                    pop_list.append(slot)
+            
+            for pop_slot in pop_list:
+                slots.pop(pop_slot)
+
         intent, session_state, confidence, bot_response = self.controller.detect_intent(session_id, text, session_state)
         return intent, session_state, confidence, bot_response
 
