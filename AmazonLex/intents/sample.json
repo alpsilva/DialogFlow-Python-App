@@ -1,13 +1,13 @@
 {
     "RegisterUser": {
-      "description": "Register new user",
-      "sampleUtterances": [
-        "Quero me registrar", 
-        "Quero criar uma conta",
-        "Ainda não tenho conta",
-        "Ainda não sou registrado",
-        "Registrar"
-      ],
+        "description": "Register new user",
+        "sampleUtterances": [
+            "Quero me registrar", 
+            "Quero criar uma conta",
+            "Ainda não tenho conta",
+            "Ainda não sou registrado",
+            "Registrar"
+        ],
         "slots": [
             {
                 "name": "UserName",
@@ -85,21 +85,21 @@
         ]
     },
     "RegisterComplaint": {
-      "description": "Registrar novo relato de um usuário registrado",  
-      "sampleUtterances": [
-        "Denunciar",
-        "Denúncia",
-        "Relatar",
-        "Relato",
-        "Gostaria de denunciar",
-        "Gostaria de fazer uma denúncia",
-        "Gostaria de relatar",
-        "Gostaria de fazer um relato",
-        "quero denunciar",
-        "quero fazer uma denúncia",
-        "quero relatar",
-        "quero fazer um relato"
-      ],
+        "description": "Registrar novo relato de um usuário registrado",  
+        "sampleUtterances": [
+            "Denunciar",
+            "Denúncia",
+            "Relatar",
+            "Relato",
+            "Gostaria de denunciar",
+            "Gostaria de fazer uma denúncia",
+            "Gostaria de relatar",
+            "Gostaria de fazer um relato",
+            "quero denunciar",
+            "quero fazer uma denúncia",
+            "quero relatar",
+            "quero fazer um relato"
+        ],
         "intentConfirmationSetting": {
             "active": true,
             "promptSpecification": {
@@ -203,5 +203,4 @@
             }
         ]
     }
-  }
-  
+}
